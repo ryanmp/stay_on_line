@@ -20,11 +20,20 @@ window.onload = function () {
     rgb(153, 204, 173)
 
     */
-    var colors = [
-        {r: 0, g: 0, b: 0, o: 1},
-        {r: 0, g: 0, b: 0, o: 1},
-        {r: 0, g: 0, b: 0, o: 1}
-    ],
+    
+        Math.seed = 0,
+        Math.seededRandom = function(max, min) {
+            max = max || 1;
+            min = min || 0;
+            Math.seed = (Math.seed * 9301 + 49297) % 233280;
+            var rnd = Math.seed / 233280;
+            return min + rnd * (max - min);
+        },
+        colors = [
+            {r: 0, g: 0, b: 0, o: 1},
+            {r: 0, g: 0, b: 0, o: 1},
+            {r: 0, g: 0, b: 0, o: 1}
+        ],
         canvas = document.getElementById('c'),
         w = canvas.width = window.innerWidth,
         h = canvas.height = window.innerHeight,
@@ -33,9 +42,22 @@ window.onload = function () {
         frame = 0,
         ctx = canvas.getContext('2d'),
         MIN_PHYSICS_TICK = 200 / 60,
-
+        
+        level_params = [
+            {pulse_p: 0.0, min_pulse_v: 0.0, max_pulse_v: 0.0, move_p: 0.0, min_r: 0.1, max_r: 0.2, v_x: 0.23, min_v_y: 0.00, max_v_y: 0.00 },
+            {pulse_p: 0.6, min_pulse_v: 0.1, max_pulse_v: 0.5, move_p: 0.0, min_r: 0.1, max_r: 0.3, v_x: 0.23, min_v_y: 0.00, max_v_y: 0.00 },
+            {pulse_p: 0.8, min_pulse_v: 0.1, max_pulse_v: 1.0, move_p: 0.0, min_r: 0.1, max_r: 0.3, v_x: 0.23, min_v_y: 0.00, max_v_y: 0.00 },
+            
+            {pulse_p: 0.8, min_pulse_v: 0.1, max_pulse_v: 1.2, move_p: 0.1, min_r: 0.1, max_r: 0.4, v_x: 0.23, min_v_y: 0.01, max_v_y: 0.02 },
+            {pulse_p: 0.8, min_pulse_v: 0.2, max_pulse_v: 1.4, move_p: 0.5, min_r: 0.1, max_r: 0.4, v_x: 0.24, min_v_y: 0.02, max_v_y: 0.05 },
+            {pulse_p: 0.9, min_pulse_v: 0.3, max_pulse_v: 1.6, move_p: 0.9, min_r: 0.1, max_r: 0.5, v_x: 0.26, min_v_y: 0.02, max_v_y: 0.10 },
+            {pulse_p: 1.0, min_pulse_v: 0.5, max_pulse_v: 2.0, move_p: 1.0, min_r: 0.1, max_r: 0.6, v_x: 0.28, min_v_y: 0.05, max_v_y: 0.20 },
+            {pulse_p: 1.0, min_pulse_v: 0.5, max_pulse_v: 3.0, move_p: 1.0, min_r: 0.1, max_r: 0.7, v_x: 0.30, min_v_y: 0.05, max_v_y: 0.20 }
+        ],
+        current_level = 0,
+        
         //player variables
-        INPUT_SCALAR = 0.002,
+        INPUT_SCALAR = 0.0015,
         BOUNCE_DAMPENING = 0.7,
         AIR_DRAG = 0.001,
         OLD_HEIGHT = s / 20,
@@ -44,11 +66,10 @@ window.onload = function () {
         moving_up = false,
         moving_down = false,
         amount = 0,
-        MAX_JUMP = 0.9,
         up_amt = 0,
         down_amt = 0,
         max_vel = 0.004,
-        init_colors = Math.random() * 2 * Math.PI,
+        init_colors = r() * 2 * Math.PI,
         score = "0",
         grav_dir = 0,
         max_v = 0.5,
@@ -69,7 +90,7 @@ window.onload = function () {
         },
         xNum = 0,
         enemies = [],
-        num_enemies = 15,
+        num_enemies = 25,
         lastTick = Date.now(),
 
         /** Update position and velocity */
@@ -78,7 +99,7 @@ window.onload = function () {
             player.v.y = player.v.y + player.a.y * grav_dir * delta - player.v.y * delta * AIR_DRAG;
 
             // CALC NEW POSITIONS
-            player.p.y += player.v.y * delta;
+            player.p.y += player.v.y * delta * s/600;
 
             if (player.p.y > h / 2) {
                 grav_dir = -1;
@@ -130,10 +151,10 @@ window.onload = function () {
     function init_enemies(){
         for (var i = 0 ; i < num_enemies; i++){
             enemies.push({
-                p:{x:Math.random()*w*3+w,y:Math.random()*h},
-                v:{x:-0.2,y:0},
-                r:s*.02*(1+Math.random()*5),
-                rv:0.001*(.5+Math.random()*50)
+                p:{x:r()*w*3+w/2,y:r()*h},
+                v:{x:level_params[current_level].v_x,y:0},
+                r:s*0.2*rrange(level_params[current_level].min_r,level_params[current_level].max_r),
+                rv:0
             }); 
         }
     } init_enemies();
@@ -147,27 +168,43 @@ window.onload = function () {
         
         for (var i = 0; i < enemies.length; i++){ 
         
-            enemies[i].p.x += enemies[i].v.x * delta;
-            enemies[i].p.y += enemies[i].v.y * delta;
-            
-            if (enemies[i].r >= s*.02*6){
-                enemies.rv *= -1;
-                if (Math.random() > .9) enemies[i].rv = -0.001*(.1+Math.random()*50); // a chance to change pulse speed 
+            // enemy hit ceiling
+            if (enemies[i].p.y >= h ) {
+                enemies[i].p.y = h-1;
+                enemies[i].v.y *= -1;
             }
-            if (enemies[i].r <= s*.02){
-                enemies.rv *= -1;
-                if (Math.random() > .9) enemies[i].rv = 0.001*(.1+Math.random()*50);  
+            if (enemies[i].p.y <= 0 ) {
+                enemies[i].p.y = 0+1;
+                enemies[i].v.y *= -1;
             }
             
+            // update enemy position
+            enemies[i].p.x += -1*level_params[current_level].v_x * delta * s/600;
+            enemies[i].p.y += enemies[i].v.y * delta * s/600;
             
-            
+            // pulsing radius
+            if (enemies[i].r >= s*0.2*level_params[current_level].max_r){
+                enemies[i].rv = Math.abs(enemies[i].rv)*-1;
+            }
+            if (enemies[i].r <= s*0.2*level_params[current_level].min_r){
+               enemies[i].rv = Math.abs(enemies[i].rv);
+            }
             enemies[i].r += enemies[i].rv * delta;
             
-
+            
+            // respawn this enemy over on the right
             if (enemies[i].p.x < -w) {
                 enemies[i].p.x = w*2;
-                enemies[i].p.y = Math.random()*h;
-                enemies[i].rv = 0.001*(.1+Math.random()*50);  
+                enemies[i].p.y = r()*h;
+                
+                enemies[i].r = s*0.2*rrange(level_params[current_level].min_r,level_params[current_level].max_r);
+                
+                if (r() < level_params[current_level].move_p){
+                    enemies[i].v.y = rbinary()*rrange(level_params[current_level].min_v_y,level_params[current_level].max_v_y);
+                }
+                if (r() < level_params[current_level].pulse_p){
+                    enemies[i].rv = 0.01*rrange(level_params[current_level].min_pulse_v,level_params[current_level].max_pulse_v);  
+                }
             }     
             
         } 
@@ -212,10 +249,22 @@ window.onload = function () {
 
         //player
         ctx.beginPath();
+        abs_h = Math.abs(h/2-player.p.y);
+        raw_h = h/2-player.p.y;
+        
+        
+        ctx.rect(player.p.x-(player.r*1.5-abs_h*.05)/2,  player.p.y, player.r*1.5-abs_h*.05, raw_h);
+        ctx.fillStyle = toRGB({r:255,g:255,b:255,o:.1*(1-abs_h*.0025*s/600)}); ctx.fill();
+        
+        
+        ctx.beginPath();
         ctx.arc(player.p.x, player.p.y,player.r, 0,2*Math.PI);
         ctx.fillStyle = toRGB(colors[1]);
         ctx.fill();
 
+        
+        
+        
         //enemies
         for (var i = 0; i < enemies.length; i++){ 
             ctx.beginPath();
@@ -240,6 +289,11 @@ window.onload = function () {
         ctx.font = font_size + "px Helvetica";
         ctx.fillStyle = toRGB({r: 255, g: 255, b: 255, o: 0.3});
         ctx.fillText(score, (s / 16) + 0, (s / 16) + font_size);
+        
+        // level
+        ctx.textAlign = 'right';
+        ctx.fillStyle = toRGB({r: 255, g: 255, b: 255, o: 0.3});
+        ctx.fillText(current_level, w - (s / 16) , (s / 16) + font_size);
          
          //cover
         
@@ -258,12 +312,6 @@ window.onload = function () {
             ctx.strokeStyle = toRGB({r:150,g:150,b:150,o:.1*(dead_ani_frame-60)/60});
             ctx.stroke();
             
-            //player
-            ctx.beginPath();
-            ctx.arc(player.p.x, player.p.y,player.r, 0,2*Math.PI);
-            ctx.fillStyle = toRGB({r:ghost_img-70,g:ghost_img,b:ghost_img,o:.1*(dead_ani_frame-60)/60});
-            ctx.fill();
-            
             //enemies
             for (var i = 0; i < enemies.length; i++){ 
                 ctx.beginPath();
@@ -272,10 +320,15 @@ window.onload = function () {
                 ctx.fill();
             }
             
+            //player
+            ctx.beginPath();
+            ctx.arc(player.p.x, player.p.y,player.r, 0,2*Math.PI);
+            ctx.fillStyle = toRGB({r:ghost_img-70,g:ghost_img,b:ghost_img,o:.1*(dead_ani_frame-60)/60});
+            ctx.fill();
+          
             // messages
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
             
             font_size = Math.round(s/6);
             ctx.font = font_size + "px Helvetica";
@@ -297,9 +350,20 @@ window.onload = function () {
 
     setInterval(function () {
         frame += 1;
-        
+           
         if (!dead){
-            score = (1 + parseInt(frame / 120)).toString();
+            
+
+            if (frame%(60*8)==0 && current_level < level_params.length-1)// every 8 seconds, advance levels
+            { 
+                current_level += 1;
+                console.log(current_level);
+
+            } 
+   
+            
+            
+            score = ((frame / 60).toFixed(1)).toString();
             var now = Date.now(),
                 delta = now - lastTick,
                 numTicks = Math.ceil(delta / MIN_PHYSICS_TICK), //at physics rate (multiple ticks per frame)
@@ -314,10 +378,14 @@ window.onload = function () {
             dead_ani_frame += 1;
             
             // after 2 seconds we can restart
-            if (dead_ani_frame > 120){
+            if (dead_ani_frame > 60){
                 if (moving_up || moving_down){
-                    dead_ani_frame = 0;
+                    
+                    // reset everything!
+                    Math.seed = 0; // hm.... i will probably need to figure out a way to reseed my random number gen as well (this doesn't work)
+                    dead_ani_frame = 0;      
                     dead = false;
+                    current_level = 0;
                     enemies = [];
                     player.p.y = h/2;
                     player.v.y = 0;
@@ -438,8 +506,22 @@ window.onload = function () {
         return Math.sqrt(dx + dy)   
     }
     
+    // random range function
+    function rrange(min, max) {
+        return Math.seededRandom(min,max);
+    }
     
+    // default random
+    function r(){
+        return Math.seededRandom();
+    }
     
+    // random binary
+    function rbinary(){
+        if (Math.seededRandom() > .5 ){
+            return 1;
+        } return -1;
+    }
     
 
 }
