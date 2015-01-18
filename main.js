@@ -280,6 +280,7 @@ window.onload = function () {
         ctx.fill();
 
         //simple middle line
+        var xx = 5.5;
         if (s > 900){ // i think the get/set pixels really struggles with large window sizes?
             ctx.beginPath();
             ctx.moveTo(0, h/2);
@@ -287,19 +288,42 @@ window.onload = function () {
             ctx.strokeStyle = toRGB(colors[1]);
             ctx.stroke();
         } else {
+            
+            ctx.beginPath();
+            ctx.moveTo(0, h/2);
+            ctx.lineTo(w, h/2);
+            ctx.strokeStyle = toRGB( {r:colors[1].r, g:colors[1].g, b:colors[1].b, o:.4});
+            ctx.stroke();
+            
             /////////////////////////////////////////////sample wave function
             if(crossed_line != 0){
+                
+                amp_idx += player.v.y*8;
+                if(( (Math.sin(((starting_frame - frame)/xx)*.5))*player.v.y)>0){
+                    console.log("add");
+                    amp_idx += amp_idx*player.v.y*5*Math.abs(Math.sin(((starting_frame - frame)/xx)*.5)-Math.PI/2);
+          
+                } else {
+                    console.log("sub");
+                    amp_idx -= player.v.y*.5*Math.abs(Math.sin(((starting_frame - frame)/xx)*.5)-Math.PI/2);
+                }
+                
                 starting_frame = frame;
-                max_amp_idx = player.v.y*player.v.y*2;
+                //max_amp_idx = amp_idx + player.v.y*player.v.y*2;
+                //max_amp_idx = player.v.y*player.v.y*2;
                 crossed_line = 0;
-                amp_idx = player.v.y*0.001;
+                
+                //amp_idx = player.v.y*0.001;
                 growing = true;
+                
+                
+                
             }
             canvasData = ctx.getImageData(0, 0, w, h);
             num_samples = parseInt(w);
             x_source = player.p.x;
             FactorA = 19;
-            if (growing){ amp_idx *= 5.5; }
+            //if (growing){ amp_idx *= 3.5; }
             if (Math.abs(amp_idx) > Math.abs(max_amp_idx)){
                 growing = false;
             } 
@@ -313,7 +337,7 @@ window.onload = function () {
                 dist = Math.abs(x0-x_source)*.01;
 
 
-                amp = -1.0/(dist) * Math.sin((dist*FactorA + (starting_frame - frame)/5)*.5);
+                amp = -1.0/(dist) * Math.sin((dist*FactorA + (starting_frame - frame)/xx)*.5);
 
 
                 x1 = x0;
