@@ -1,26 +1,35 @@
 <html>
     <head>
-        <style>
-            #c {
-                position:fixed;
-                top:0;
-                left:0;
-                overflow:none;
-                width:100%;
-                height:100%;
-                background-color:#333;
-            }
-            body, html{
-                position:absolute;
-                overflow:none;
-                padding:0;
-                margin:0;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css">
+        <link rel="stylesheet" type="text/css" href="main.css">
         <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     </head>
     <body>
         <canvas id="c"></canvas>
+        <!--
+        <div id="level-list">
+            <h1>Working Title</h1>
+            <h2>Choose a level:</h2>
+            <ul>
+              <li data-idx="0">
+                <div class="name">1</div>
+                <img src="1.jpeg" class="level-img">
+                <div class="time">0:00</div>
+              </li>
+              <li data-idx="1">
+                <div class="name">2</div>
+                <img src="1.jpeg" class="level-img">
+                <div class="time">0:00</div>
+              </li data-idx="2">
+              <li class="locked-level">
+                <div class="name">2</div>
+                <img src="1.jpeg" class="level-img">
+                <div class="time">0:00</div>
+              </li>
+            </ul>
+        </div>
+        -->
+        <script src="game.js"></script>
         <script src="main.js"></script>
     </body>
 </html>

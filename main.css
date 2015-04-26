@@ -1,0 +1,82 @@
+body, html{
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  color: #eee;
+}
+
+h1{
+  text-align: center;
+}
+
+h1, h2, h3, h4{
+  font-weight: 300;
+}
+
+#c {
+  position:fixed;
+  top:0;
+  left:0;
+  overflow:none;
+  width:100%;
+  height:100%;
+  background-color:#333;
+  z-index:-1;
+}
+
+#level-list{
+  width: 500px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#level-list ul{
+  position: relative;
+  margin: 0px;
+  padding: 0px;
+}
+
+#level-list ul li{
+  position: relative;
+  display: block;
+  cursor:pointer;
+  border: solid 1px #eee;
+  list-style-type: none;
+  margin-bottom: 10px;
+   height: 50px;
+}
+
+#level-list ul li .name{
+  position: absolute;
+  top: 0px;
+  left: 10px;
+  display: block;
+  line-height: 50px;
+
+}
+
+#level-list ul li .time{
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  display: block;
+  line-height: 50px;
+}
+
+#level-list ul li img.level-img{
+  position:absolute;
+  top: 0px;
+  width: 100%;
+  height: 50px;
+  display: block;
+}
+
+#level-list ul li.locked-level{
+  position: relative;
+  display: block;
+  cursor:default;
+  border: solid 1px #888;
+  list-style-type: none;
+  margin-bottom: 10px;
+  height: 50px;
+  color: #888;
+}
