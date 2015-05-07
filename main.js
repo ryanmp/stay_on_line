@@ -20,7 +20,7 @@ window.onload = function () {
     rgb(153, 204, 173)
 
     */
-    
+
         Math.seed = 2,
         Math.seededRandom = function(max, min) {
             max = max || 1;
@@ -30,7 +30,7 @@ window.onload = function () {
             return min + rnd * (max - min);
         },
         colors = [
-            {r: 0, g: 0, b: 0, o: 1},
+            {r: 0, g: 0, b: 0, o: .8},
             {r: 0, g: 0, b: 0, o: 1},
             {r: 0, g: 0, b: 0, o: 1}
         ],
@@ -38,16 +38,17 @@ window.onload = function () {
         w = canvas.width = window.innerWidth,
         h = canvas.height = window.innerHeight,
         s = Math.min(w, h),
+        s_max = Math.max(w,h),
         framerate = 60,
         frame = 0,
         ctx = canvas.getContext('2d'),
         MIN_PHYSICS_TICK = 200 / 60,
-        
-        level_params = [ 
+
+        level_params = [
             {pulse_p: 0.0, min_pulse_v: 0.0, max_pulse_v: 0.0, move_p: 0.0, min_r: 0.1, max_r: 0.2, v_x: 0.23, min_v_y: 0.00, max_v_y: 0.00, min_v_x: 0.0, max_v_x: 1.0 },
             {pulse_p: 0.6, min_pulse_v: 0.1, max_pulse_v: 0.5, move_p: 0.0, min_r: 0.1, max_r: 0.3, v_x: 0.23, min_v_y: 0.00, max_v_y: 0.00, min_v_x: 0.0, max_v_x: 3.0 },
             {pulse_p: 0.8, min_pulse_v: 0.1, max_pulse_v: 1.0, move_p: 0.0, min_r: 0.1, max_r: 0.3, v_x: 0.23, min_v_y: 0.00, max_v_y: 0.00, min_v_x: 0.0, max_v_x: 3.0 },
-            
+
             {pulse_p: 0.8, min_pulse_v: 0.1, max_pulse_v: 1.2, move_p: 0.1, min_r: 0.1, max_r: 0.4, v_x: 0.23, min_v_y: 0.01, max_v_y: 0.02, min_v_x: 0.0, max_v_x: 3.0 },
             {pulse_p: 0.8, min_pulse_v: 0.2, max_pulse_v: 1.4, move_p: 0.5, min_r: 0.1, max_r: 0.4, v_x: 0.24, min_v_y: 0.02, max_v_y: 0.05, min_v_x: 0.0, max_v_x: 4.0 },
             {pulse_p: 0.9, min_pulse_v: 0.3, max_pulse_v: 1.6, move_p: 0.9, min_r: 0.1, max_r: 0.5, v_x: 0.26, min_v_y: 0.02, max_v_y: 0.10, min_v_x: 0.0, max_v_x: 4.0 },
@@ -55,14 +56,14 @@ window.onload = function () {
             {pulse_p: 1.0, min_pulse_v: 0.5, max_pulse_v: 3.0, move_p: 1.0, min_r: 0.1, max_r: 0.7, v_x: 0.30, min_v_y: 0.05, max_v_y: 0.20, min_v_x: 0.0, max_v_x: 9.0 }
         ],
         current_level = 0,
-            
+
         //for wave effect
         amp_idx = 0,
         crossed_line = 0,
         starting_frame = 0,
         growing = false,
             max_amp_idx = 0,
-            
+
         //player variables
         INPUT_SCALAR = 0.0015,
         BOUNCE_DAMPENING = 0.7,
@@ -109,16 +110,16 @@ window.onload = function () {
             // CALC NEW POSITIONS
             p_last_y_pos = player.p.y;
             player.p.y += player.v.y * delta * s/600;
-            
+
             if (((p_last_y_pos-h/2)*(player.p.y-h/2)) < 0){
                 if ( p_last_y_pos < player.p.y){
-                    crossed_line = 1;   
+                    crossed_line = 1;
                 } else {
-                    crossed_line = -1;   
+                    crossed_line = -1;
                 }
             }
-            
-            
+
+
             if (player.p.y > h / 2) {
                 grav_dir = -1;
             } else if (player.p.y < h / 2) {
@@ -134,7 +135,7 @@ window.onload = function () {
                 player.v.y += delta*INPUT_SCALAR;
             }
         },
-        
+
         dead_ani_frame = 0,
         dead = false,
 
@@ -151,15 +152,15 @@ window.onload = function () {
             if (player.p.y <= 0 + player.r) {
                 player.p.y = 0 + player.r + 1;
                 player.v.y = -1 * BOUNCE_DAMPENING * player.v.y;
-            } 
-            
+            }
+
             //collide with enemies
-            for (var i = 0; i < enemies.length; i++){                
+            for (var i = 0; i < enemies.length; i++){
                 if (distance(enemies[i],player) < enemies[i].r + player.r){
                     dead = true;
-                }  
+                }
             }
-    
+
         },
 
         move = function () {
@@ -173,15 +174,15 @@ window.onload = function () {
                 v:{x:0,y:0},
                 r:s*0.2*rrange(level_params[current_level].min_r,level_params[current_level].max_r),
                 rv:0
-            }); 
+            });
         }
     } init_enemies();
-    
+
     var enemyAI = function (delta) {
-        
-        
-        for (var i = 0; i < enemies.length; i++){ 
-        
+
+
+        for (var i = 0; i < enemies.length; i++){
+
             // enemy hit ceiling
             if (enemies[i].p.y >= h ) {
                 enemies[i].p.y = h-1;
@@ -191,11 +192,11 @@ window.onload = function () {
                 enemies[i].p.y = 0+1;
                 enemies[i].v.y *= -1;
             }
-            
+
             // update enemy position
             enemies[i].p.x += -1*(level_params[current_level].v_x+enemies[i].v.x) * delta * s/600;
             enemies[i].p.y += enemies[i].v.y * delta * s/600;
-            
+
             // pulsing radius
             if (enemies[i].r >= s*0.2*level_params[current_level].max_r){
                 enemies[i].rv = Math.abs(enemies[i].rv)*-1;
@@ -204,29 +205,29 @@ window.onload = function () {
                enemies[i].rv = Math.abs(enemies[i].rv);
             }
             enemies[i].r += enemies[i].rv * delta;
-            
-            
+
+
             // respawn this enemy over on the right
             if (enemies[i].p.x < -w) {
                 enemies[i].p.x = w*2;
                 enemies[i].p.y = r()*h;
-                
-                
+
+
                 // add random horizontal velocity element
-                enemies[i].v.x = rrange(level_params[current_level].min_v_x,level_params[current_level].max_v_x)*s/600*.01;   
-                
+                enemies[i].v.x = rrange(level_params[current_level].min_v_x,level_params[current_level].max_v_x)*s/600*.01;
+
                 // init radius
                 enemies[i].r = s*0.2*rrange(level_params[current_level].min_r,level_params[current_level].max_r);
-                
+
                 if (r() < level_params[current_level].move_p){
                     enemies[i].v.y = rbinary()*rrange(level_params[current_level].min_v_y,level_params[current_level].max_v_y);
                 }
                 if (r() < level_params[current_level].pulse_p){
-                    enemies[i].rv = 0.01*rrange(level_params[current_level].min_pulse_v,level_params[current_level].max_pulse_v);  
+                    enemies[i].rv = 0.01*rrange(level_params[current_level].min_pulse_v,level_params[current_level].max_pulse_v);
                 }
-            }     
-            
-        } 
+            }
+
+        }
     };
 
     var colorChanges = function () {
@@ -246,10 +247,10 @@ window.onload = function () {
         colors[0].g = tempC[1];
         colors[0].b = tempC[2];
         */
-        
+
         hue1 = Math.sin((init_colors+frame*.0005)%Math.PI/2);
         hue2 = (hue1 + 0.5)%1;
-        
+
         colors[1] = hslToRgb(hue1,0.7,0.6,1.0);
         colors[2] = hslToRgb(hue2,0.7,0.6,0.9);
     };
@@ -259,12 +260,14 @@ window.onload = function () {
 
         if (dead){
             colors[1] = {r:255,g:255,b:255,o:1};
-            colors[2] = {r:255,g:255,b:255,o:1}; 
+            colors[2] = {r:255,g:255,b:255,o:1};
         }
-        
+
         //clear
-        ctx.beginPath();
-        ctx.rect(0, 0, w, h); ctx.fillStyle = toRGB(colors[0]); ctx.fill();
+        if (frame%1==0){
+            ctx.beginPath();
+            ctx.rect(0, 0, w, h); ctx.fillStyle = toRGB(colors[0]); ctx.fill();
+        }
 
         //shadow/rubberband thing
         ctx.beginPath();
@@ -272,7 +275,7 @@ window.onload = function () {
         raw_h = h/2-player.p.y;
         ctx.rect(player.p.x-(player.r*1.5-abs_h*.05)/2,  player.p.y, player.r*1.5-abs_h*.05, raw_h);
         ctx.fillStyle = toRGB({r:255,g:255,b:255,o:.1*(1-abs_h*1.5/h)}); ctx.fill();
-        
+
         //player
         ctx.beginPath();
         ctx.arc(player.p.x, player.p.y,player.r, 0,2*Math.PI);
@@ -281,43 +284,43 @@ window.onload = function () {
 
         //simple middle line
         var xx = 5.5;
-        if (s > 900){ // i think the get/set pixels really struggles with large window sizes?
+        if (s_max > 900){ // i think the get/set pixels really struggles with large window sizes?
             ctx.beginPath();
             ctx.moveTo(0, h/2);
             ctx.lineTo(w, h/2);
             ctx.strokeStyle = toRGB(colors[1]);
             ctx.stroke();
         } else {
-            
+
             ctx.beginPath();
             ctx.moveTo(0, h/2);
             ctx.lineTo(w, h/2);
             ctx.strokeStyle = toRGB( {r:colors[1].r, g:colors[1].g, b:colors[1].b, o:.4});
             ctx.stroke();
-            
+
             /////////////////////////////////////////////sample wave function
             if(crossed_line != 0){
-                
+
                 amp_idx += player.v.y*8;
                 if(( (Math.sin(((starting_frame - frame)/xx)*.5))*player.v.y)>0){
                     console.log("add");
                     amp_idx += amp_idx*player.v.y*5*Math.abs(Math.sin(((starting_frame - frame)/xx)*.5)-Math.PI/2);
-          
+
                 } else {
                     console.log("sub");
                     amp_idx -= player.v.y*.5*Math.abs(Math.sin(((starting_frame - frame)/xx)*.5)-Math.PI/2);
                 }
-                
+
                 starting_frame = frame;
                 //max_amp_idx = amp_idx + player.v.y*player.v.y*2;
                 //max_amp_idx = player.v.y*player.v.y*2;
                 crossed_line = 0;
-                
+
                 //amp_idx = player.v.y*0.001;
                 growing = true;
-                
-                
-                
+
+
+
             }
             canvasData = ctx.getImageData(0, 0, w, h);
             num_samples = parseInt(w);
@@ -326,7 +329,7 @@ window.onload = function () {
             //if (growing){ amp_idx *= 3.5; }
             if (Math.abs(amp_idx) > Math.abs(max_amp_idx)){
                 growing = false;
-            } 
+            }
             if (!growing && Math.abs(amp_idx) > 0.0001){
                 amp_idx *= 0.96;
             }
@@ -345,18 +348,18 @@ window.onload = function () {
 
                drawPixel(parseInt(x1), parseInt(y1), colors[1].r, colors[1].g, colors[1].b, parseInt(255*(1-dist*.1*s/600)), canvasData);
             }
-            updateCanvas(); 
+            updateCanvas();
             //////////////////////////////////////////////////////end wave function
         }
 
         //enemies
-        for (var i = 0; i < enemies.length; i++){ 
+        for (var i = 0; i < enemies.length; i++){
             ctx.beginPath();
             ctx.arc(enemies[i].p.x,enemies[i].p.y,enemies[i].r,0 , 2 * Math.PI);
             ctx.fillStyle = toRGB(colors[2]);
             ctx.fill();
         }
-          
+
         // score
         font_size = Math.round(s/15);
         ctx.textAlign = 'left';
@@ -364,78 +367,78 @@ window.onload = function () {
         ctx.font = font_size + "px Helvetica";
         ctx.fillStyle = toRGB({r: 255, g: 255, b: 255, o: 0.3});
         ctx.fillText(score, (s / 16) + 0, (s / 16) + font_size);
-        
+
         // level
         ctx.textAlign = 'right';
         ctx.fillStyle = toRGB({r: 255, g: 255, b: 255, o: 0.3});
         ctx.fillText(current_level, w - (s / 16) , (s / 16) + font_size);
-         
+
          //cover
-        
+
         if (dead){
-            
+
             var ghost_img = 200;
-            
+
             // fade out
             ctx.beginPath();
             ctx.rect(0, 0, w, h); ctx.fillStyle = toRGB({r: 255, g: 255, b: 255, o: dead_ani_frame/60}); ctx.fill();
-            
+
             // stroke
             ctx.beginPath();
             ctx.moveTo(0, h/2);
             ctx.lineTo(w, h/2);
             ctx.strokeStyle = toRGB({r:150,g:150,b:150,o:.1*(dead_ani_frame-60)/60});
             ctx.stroke();
-            
+
             //enemies
-            for (var i = 0; i < enemies.length; i++){ 
+            for (var i = 0; i < enemies.length; i++){
                 ctx.beginPath();
                 ctx.arc(enemies[i].p.x,enemies[i].p.y,enemies[i].r,0 , 2 * Math.PI);
                 ctx.fillStyle = toRGB({r:ghost_img,g:ghost_img,b:ghost_img,o:.1*(dead_ani_frame-60)/60});
                 ctx.fill();
             }
-            
+
             //player
             ctx.beginPath();
             ctx.arc(player.p.x, player.p.y,player.r, 0,2*Math.PI);
             ctx.fillStyle = toRGB({r:ghost_img-70,g:ghost_img,b:ghost_img,o:.1*(dead_ani_frame-60)/60});
             ctx.fill();
-          
+
             // messages
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
+
             font_size = Math.round(s/6);
             ctx.font = font_size + "px Helvetica";
             ctx.fillStyle = toRGB({r: 0, g: 0, b: 0, o: dead_ani_frame/60});
             ctx.fillText("DEAD", w/2, h*(1/5) );
-            
+
             font_size = Math.round(s/3);
             ctx.font = font_size + "px Helvetica";
             ctx.fillText(score, w/2, h/2 );
-            
-            
+
+
             font_size = Math.round(s/20);
             ctx.font = font_size + "px Helvetica";
-            ctx.fillText("Try Again?", w/2, h*(4/5));     
+            ctx.fillText("Try Again?", w/2, h*(4/5));
         }
-           
-        
+
+
     };
 
     setInterval(function () {
         frame += 1;
-           
+
         if (!dead){
-            
+
 
             if (frame%(60*8)==0 && current_level < level_params.length-1)// every 8 seconds, advance levels
-            { 
+            {
                 current_level += 1;
-            } 
-   
-            
-            
+            }
+
+
+
             score = ((frame / 60).toFixed(1)).toString();
             var now = Date.now(),
                 delta = now - lastTick,
@@ -449,14 +452,14 @@ window.onload = function () {
             }
         } else {
             dead_ani_frame += 1;
-            
+
             // after 2 seconds we can restart
             if (dead_ani_frame > 60){
                 if (moving_up || moving_down){
-                    
+
                     // reset everything!
                     Math.seed = 0; // hm.... i will probably need to figure out a way to reseed my random number gen as well (this doesn't work)
-                    dead_ani_frame = 0;      
+                    dead_ani_frame = 0;
                     dead = false;
                     current_level = 0;
                     enemies = [];
@@ -470,7 +473,7 @@ window.onload = function () {
 
         //at frame rate
         colorChanges();
-        draw(); 
+        draw();
         lastTick = now;
     }, 1000 / framerate);
 
@@ -568,35 +571,35 @@ window.onload = function () {
         g1 = Math.round(g * 255);
         b1 = Math.round(b * 255);
         o1 = o;
-        
+
         return {r: r1, g: g1, b: b1, o: o1};
     }
 
-    
+
     function distance(p1, p2){
         var dx, dy;
         dx = p1.p.x - p2.p.x; dx *= dx;
         dy = p1.p.y - p2.p.y; dy *= dy;
-        return Math.sqrt(dx + dy)   
+        return Math.sqrt(dx + dy)
     }
-    
+
     // random range function
     function rrange(min, max) {
         return Math.seededRandom(min,max);
     }
-    
+
     // default random
     function r(){
         return Math.seededRandom();
     }
-    
+
     // random binary
     function rbinary(){
         if (Math.seededRandom() > .5 ){
             return 1;
         } return -1;
     }
-    
+
     function drawPixel (x, y, r, g, b, a, canvasData) {
         var index = (x + y * w) * 4;
 
@@ -609,8 +612,8 @@ window.onload = function () {
     function updateCanvas() {
         ctx.putImageData(canvasData, 0, 0);
     }
-    
-    
-    
+
+
+
 
 }
